@@ -1,5 +1,6 @@
 
 
+default: UseIdAgda 
 all: UseIdAgda Hello2
 
 UseIdAgda: UseIdAgda.hs IdAgda.agda
