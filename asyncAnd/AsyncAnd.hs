@@ -63,10 +63,10 @@ joinA _ _  = TopErr
 
 -- Here's a thresholded read.  It's safe.
 -- 
--- It meet the criteria that it stays bottom until a single transition point, and its
+-- It meets the criteria that it stays bottom until a single transition point, and its
 -- value is constant thereafter.
 --
--- Note: using Nothing to represent bottom here.
+-- Note: using Nothing to represent errors here.
 readAnd :: AndState -> Maybe OneBool
 readAnd (Live F _) = Just F
 readAnd (Live _ F) = Just F

@@ -1,17 +1,16 @@
 
 
-include ../Makefile
-
 default: UseIdAgda 
 all: UseIdAgda Hello2
 
-UseIdAgda: UseIdAgda.hs IdAgda.agda
-	agda --ghc-dont-call-ghc --compile IdAgda.agda
+include ../Makefile.top
+
+UseIdAgda: $(AGDA25) UseIdAgda.hs IdAgda.agda
+	$(AGDA25) --ghc-dont-call-ghc --compile IdAgda.agda
 
 # This one has a main function:
-Hello2: Hello2.agda
-	agda --compile Hello2.agda
+Hello2: $(AGDA25) Hello2.agda
+	$(AGDA25) --compile Hello2.agda
 
 clean:
 	rm -rf ./MAlonzo Hello2 *.agdai *.o *.hi
-

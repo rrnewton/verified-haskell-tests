@@ -8,11 +8,7 @@
 
 .PHONY: tools 
 
-tools: ./bin/agda
-
-# Install agda 2.4.2.3
-./bin/agda:
-	stack install --local-bin-path=./bin --resolver=lts-3.0 Agda
+#-------------------------------------------------------------------
 
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
@@ -20,3 +16,27 @@ AGDA=$(ROOT_DIR)/bin/agda
 # Here's an alternate command to run Agda 2.4.2.3:
 # AGDA= docker run -i --rm -v $(HOME):$(HOME) banacorn/agda:2.4.2.3 agda
 
+AGDA25=$(ROOT_DIR)/bin/agda25/agda
+
+#-------------------------------------------------------------------
+
+tools: $(AGDA) $(AGDA25)
+
+# Install agda 2.4.2.3
+build-agda24: $(AGDA)
+$(AGDA):
+	stack install --local-bin-path=./bin --resolver=lts-3.0 Agda
+
+build-agda25: $(AGDA25)
+$(AGDA25):
+	mkdir -p ./bin/agda25/
+	stack install --local-bin-path=./bin/agda25/ --resolver=lts-6.1 Agda
+
+# NIX_PATH=
+
+# With 16.09pre:
+build-coq:
+	nix-env -i coq-8.5pl1
+
+build-isabelle:
+	nix-env -i isabelle-2016

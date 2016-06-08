@@ -5,6 +5,6 @@ all: agda
 
 include ../Makefile.top
 
-agda:
+agda: $(AGDA)
 	$(AGDA) --version
 	cd ./agda/ && $(AGDA) VerifyAnd.agda
