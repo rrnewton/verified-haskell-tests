@@ -8,6 +8,8 @@ data Bool : Set where
   true : Bool
   false : Bool
 
+-- Here's the state of an And LVar, which consumes two
+-- potentially-defined inputs.
 data AndState : Set where
   Bot      : AndState
   TrueBot  : AndState
@@ -28,13 +30,26 @@ myjoin TrueTrue BotTrue = TrueTrue
 myjoin Bot x = x
 myjoin F  _  = F
 ---------------------------
-myjoin x y = myjoin y x -- Yay, this works!
+-- myjoin x y = myjoin y x -- Yay, this works!
+ -- [2016.06.08] Nope, in 2.4.2.3 termination checking fails here.
 
--- myjoin BotTrue TrueBot = TrueTrue
--- myjoin TrueBot TrueTrue  = TrueTrue
--- myjoin BotTrue TrueTrue  = TrueTrue
--- myjoin x Bot = x
--- myjoin _  F  = F
+-- Here we manually spell it out:
+myjoin BotTrue TrueBot   = TrueTrue
+myjoin TrueBot TrueTrue  = TrueTrue
+myjoin BotTrue TrueTrue  = TrueTrue
+myjoin x Bot = x
+myjoin _  F  = F
+
+-- myjoin TrueBot Bot = ?
+-- myjoin TrueBot TrueTrue = ?
+-- myjoin TrueBot F = ?
+-- myjoin BotTrue Bot = ?
+-- myjoin BotTrue TrueBot = ?
+-- myjoin BotTrue TrueTrue = ?
+-- myjoin BotTrue F = ?
+-- myjoin TrueTrue Bot = ?
+-- myjoin TrueTrue F = ?
+
 
 data _==_ {A : Set} (x : A) : A -> Set where
   refl : x == x
