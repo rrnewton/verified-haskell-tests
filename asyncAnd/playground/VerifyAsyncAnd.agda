@@ -1,0 +1,605 @@
+
+module VerifyAsyncAnd where
+
+-- Requirements from the standard library:
+open import Data.Maybe
+open import Data.Bool
+-- open import Data.Product
+-- open import Data.List
+-- open import Relation.Binary.Core
+-- open import Relation.Binary.PropositionalEquality
+
+-- data Pair : Set where
+--    pair : Type -> Type -> Type
+  
+data OneBool : Set where
+  Bot      : OneBool
+  Fa       : OneBool
+  Tr       : OneBool
+
+data AndState : Set where
+  Live   : OneBool -> OneBool -> AndState
+  TopErr : AndState
+
+-- Ugh, where are the standard pairs?
+data APair : Set where
+  apair : Maybe OneBool -> Maybe OneBool -> APair
+
+joinB : OneBool -> OneBool -> Maybe OneBool
+-- joinB x y | x == y = Just x
+joinB Bot x = just x
+joinB Tr Fa = nothing
+-- joinB x y = if x == y then x else joinB y x
+joinB Tr Tr = just Tr
+joinB Fa Fa = just Fa
+-- joinB x y = joinB y x
+joinB x Bot = just x
+joinB Fa Tr = nothing
+
+joinA : AndState -> AndState -> AndState
+joinA TopErr _  = TopErr
+joinA _ TopErr  = TopErr
+joinA (Live a b) (Live c d) with apair (joinB a c) (joinB b d)
+... | (apair (just x) (just y)) = Live x y
+... | (apair _ _) = TopErr
+
+data _==_ {A : Set} (x : A) : A -> Set where
+  refl : x == x
+
+-- data _<=_ {A : Set} (x : A) : A -> Set where
+--   leq : x <= x
+
+-- leqB : OneBool -> OneBool -> Prop...
+
+data _<=_ : OneBool -> OneBool -> Set where
+  leq_Refl : {a : OneBool} -> a <= a
+  leq_BotT : Bot <= Tr
+  leq_BotF : Bot <= Fa
+
+readAnd : AndState -> Maybe OneBool
+readAnd (Live Fa _) = just Fa
+readAnd (Live _ Fa) = just Fa
+readAnd (Live Tr Tr) = just Tr
+readAnd (Live Bot _) = just Bot
+readAnd (Live _ Bot) = just Bot
+readAnd TopErr = nothing
+
+-- readAnd_validGetter1 : {a b : AndState} ->
+--     (a <= b) -> (readAnd b = Some Bot -> readAnd a = Some Bot)
+
+{-
+--------------------------------------------------------------------------------
+-- Generated nonsense:
+
+-- This one needed me to break down one case or it would timeout.
+joinA_commutative : {a b : AndState} -> (joinA a b) == (joinA b a)
+joinA_commutative {TopErr} {Live x x₁} = refl
+joinA_commutative {TopErr} {TopErr} = refl
+joinA_commutative {Live Bot Bot} {Live Bot Bot} = refl
+joinA_commutative {Live Bot Bot} {Live Bot Fa} = refl
+joinA_commutative {Live Bot Bot} {Live Bot Tr} = refl
+joinA_commutative {Live Bot Bot} {Live Fa Bot} = refl
+joinA_commutative {Live Bot Bot} {Live Fa Fa} = refl
+joinA_commutative {Live Bot Bot} {Live Fa Tr} = refl
+joinA_commutative {Live Bot Bot} {Live Tr Bot} = refl
+joinA_commutative {Live Bot Bot} {Live Tr Fa} = refl
+joinA_commutative {Live Bot Bot} {Live Tr Tr} = refl
+joinA_commutative {Live Bot Fa} {Live Bot Bot} = refl
+joinA_commutative {Live Bot Fa} {Live Bot Fa} = refl
+joinA_commutative {Live Bot Fa} {Live Bot Tr} = refl
+joinA_commutative {Live Bot Fa} {Live Fa Bot} = refl
+joinA_commutative {Live Bot Fa} {Live Fa Fa} = refl
+joinA_commutative {Live Bot Fa} {Live Fa Tr} = refl
+joinA_commutative {Live Bot Fa} {Live Tr Bot} = refl
+joinA_commutative {Live Bot Fa} {Live Tr Fa} = refl
+joinA_commutative {Live Bot Fa} {Live Tr Tr} = refl
+joinA_commutative {Live Bot Tr} {Live Bot Bot} = refl
+joinA_commutative {Live Bot Tr} {Live Bot Fa} = refl
+joinA_commutative {Live Bot Tr} {Live Bot Tr} = refl
+joinA_commutative {Live Bot Tr} {Live Fa Bot} = refl
+joinA_commutative {Live Bot Tr} {Live Fa Fa} = refl
+joinA_commutative {Live Bot Tr} {Live Fa Tr} = refl
+joinA_commutative {Live Bot Tr} {Live Tr Bot} = refl
+joinA_commutative {Live Bot Tr} {Live Tr Fa} = refl
+joinA_commutative {Live Bot Tr} {Live Tr Tr} = refl
+joinA_commutative {Live Fa Bot} {Live Bot Bot} = refl
+joinA_commutative {Live Fa Bot} {Live Bot Fa} = refl
+joinA_commutative {Live Fa Bot} {Live Bot Tr} = refl
+joinA_commutative {Live Fa Fa} {Live Bot Bot} = refl
+joinA_commutative {Live Fa Fa} {Live Bot Fa} = refl
+joinA_commutative {Live Fa Fa} {Live Bot Tr} = refl
+joinA_commutative {Live Fa Tr} {Live Bot Bot} = refl
+joinA_commutative {Live Fa Tr} {Live Bot Fa} = refl
+joinA_commutative {Live Fa Tr} {Live Bot Tr} = refl
+joinA_commutative {Live Fa Bot} {Live Fa Bot} = refl
+joinA_commutative {Live Fa Bot} {Live Fa Fa} = refl
+joinA_commutative {Live Fa Bot} {Live Fa Tr} = refl
+joinA_commutative {Live Fa Fa} {Live Fa Bot} = refl
+joinA_commutative {Live Fa Fa} {Live Fa Fa} = refl
+joinA_commutative {Live Fa Fa} {Live Fa Tr} = refl
+joinA_commutative {Live Fa Tr} {Live Fa Bot} = refl
+joinA_commutative {Live Fa Tr} {Live Fa Fa} = refl
+joinA_commutative {Live Fa Tr} {Live Fa Tr} = refl
+joinA_commutative {Live Fa b} {Live Tr x} = refl
+joinA_commutative {Live Tr Bot} {Live Bot Bot} = refl
+joinA_commutative {Live Tr Bot} {Live Bot Fa} = refl
+joinA_commutative {Live Tr Bot} {Live Bot Tr} = refl
+joinA_commutative {Live Tr Fa} {Live Bot Bot} = refl
+joinA_commutative {Live Tr Fa} {Live Bot Fa} = refl
+joinA_commutative {Live Tr Fa} {Live Bot Tr} = refl
+joinA_commutative {Live Tr Tr} {Live Bot Bot} = refl
+joinA_commutative {Live Tr Tr} {Live Bot Fa} = refl
+joinA_commutative {Live Tr Tr} {Live Bot Tr} = refl
+joinA_commutative {Live Tr b} {Live Fa x} = refl
+joinA_commutative {Live Tr Bot} {Live Tr Bot} = refl
+joinA_commutative {Live Tr Bot} {Live Tr Fa} = refl
+joinA_commutative {Live Tr Bot} {Live Tr Tr} = refl
+joinA_commutative {Live Tr Fa} {Live Tr Bot} = refl
+joinA_commutative {Live Tr Fa} {Live Tr Fa} = refl
+joinA_commutative {Live Tr Fa} {Live Tr Tr} = refl
+joinA_commutative {Live Tr Tr} {Live Tr Bot} = refl
+joinA_commutative {Live Tr Tr} {Live Tr Fa} = refl
+joinA_commutative {Live Tr Tr} {Live Tr Tr} = refl
+joinA_commutative {Live a b} {TopErr} = refl
+
+joinA_idempotent : {a b : AndState} -> joinA a (joinA a b) == joinA a b
+joinA_idempotent {Live Bot Bot} {Live x x₁} = refl
+joinA_idempotent {Live Bot Fa} {Live x Bot} = refl
+joinA_idempotent {Live Bot Fa} {Live x Fa} = refl
+joinA_idempotent {Live Bot Fa} {Live x Tr} = refl
+joinA_idempotent {Live Bot Tr} {Live x Bot} = refl
+joinA_idempotent {Live Bot Tr} {Live x Fa} = refl
+joinA_idempotent {Live Bot Tr} {Live x Tr} = refl
+joinA_idempotent {Live Fa Bot} {Live Bot x} = refl
+joinA_idempotent {Live Fa Fa} {Live Bot Bot} = refl
+joinA_idempotent {Live Fa Fa} {Live Bot Fa} = refl
+joinA_idempotent {Live Fa Fa} {Live Bot Tr} = refl
+joinA_idempotent {Live Fa Tr} {Live Bot Bot} = refl
+joinA_idempotent {Live Fa Tr} {Live Bot Fa} = refl
+joinA_idempotent {Live Fa Tr} {Live Bot Tr} = refl
+joinA_idempotent {Live Fa Bot} {Live Fa x} = refl
+joinA_idempotent {Live Fa Fa} {Live Fa Bot} = refl
+joinA_idempotent {Live Fa Fa} {Live Fa Fa} = refl
+joinA_idempotent {Live Fa Fa} {Live Fa Tr} = refl
+joinA_idempotent {Live Fa Tr} {Live Fa Bot} = refl
+joinA_idempotent {Live Fa Tr} {Live Fa Fa} = refl
+joinA_idempotent {Live Fa Tr} {Live Fa Tr} = refl
+joinA_idempotent {Live Fa x} {Live Tr x₁} = refl
+joinA_idempotent {Live Tr Bot} {Live Bot x} = refl
+joinA_idempotent {Live Tr Fa} {Live Bot Bot} = refl
+joinA_idempotent {Live Tr Fa} {Live Bot Fa} = refl
+joinA_idempotent {Live Tr Fa} {Live Bot Tr} = refl
+joinA_idempotent {Live Tr Tr} {Live Bot Bot} = refl
+joinA_idempotent {Live Tr Tr} {Live Bot Fa} = refl
+joinA_idempotent {Live Tr Tr} {Live Bot Tr} = refl
+joinA_idempotent {Live Tr x} {Live Fa x₁} = refl
+joinA_idempotent {Live Tr Bot} {Live Tr x} = refl
+joinA_idempotent {Live Tr Fa} {Live Tr Bot} = refl
+joinA_idempotent {Live Tr Fa} {Live Tr Fa} = refl
+joinA_idempotent {Live Tr Fa} {Live Tr Tr} = refl
+joinA_idempotent {Live Tr Tr} {Live Tr Bot} = refl
+joinA_idempotent {Live Tr Tr} {Live Tr Fa} = refl
+joinA_idempotent {Live Tr Tr} {Live Tr Tr} = refl
+joinA_idempotent {Live x x₁} {TopErr} = refl
+joinA_idempotent {TopErr} = refl
+
+joinA_associative : {a b c : AndState} -> joinA a (joinA b c) == joinA (joinA a b) c
+joinA_associative {TopErr} {y} {z} = refl
+joinA_associative {Live a b} {TopErr} {z} = refl
+joinA_associative {Live Bot Bot} {Live Bot Bot} {Live x x₁} = refl
+joinA_associative {Live Bot Bot} {Live Bot Fa} {Live x Bot} = refl
+joinA_associative {Live Bot Bot} {Live Bot Fa} {Live x Fa} = refl
+joinA_associative {Live Bot Bot} {Live Bot Fa} {Live x Tr} = refl
+joinA_associative {Live Bot Bot} {Live Bot Tr} {Live x Bot} = refl
+joinA_associative {Live Bot Bot} {Live Bot Tr} {Live x Fa} = refl
+joinA_associative {Live Bot Bot} {Live Bot Tr} {Live x Tr} = refl
+joinA_associative {Live Bot Bot} {Live Fa Bot} {Live Bot x} = refl
+joinA_associative {Live Bot Bot} {Live Fa Fa} {Live Bot Bot} = refl
+joinA_associative {Live Bot Bot} {Live Fa Fa} {Live Bot Fa} = refl
+joinA_associative {Live Bot Bot} {Live Fa Fa} {Live Bot Tr} = refl
+joinA_associative {Live Bot Bot} {Live Fa Tr} {Live Bot Bot} = refl
+joinA_associative {Live Bot Bot} {Live Fa Tr} {Live Bot Fa} = refl
+joinA_associative {Live Bot Bot} {Live Fa Tr} {Live Bot Tr} = refl
+joinA_associative {Live Bot Bot} {Live Fa Bot} {Live Fa x} = refl
+joinA_associative {Live Bot Bot} {Live Fa Fa} {Live Fa Bot} = refl
+joinA_associative {Live Bot Bot} {Live Fa Fa} {Live Fa Fa} = refl
+joinA_associative {Live Bot Bot} {Live Fa Fa} {Live Fa Tr} = refl
+joinA_associative {Live Bot Bot} {Live Fa Tr} {Live Fa Bot} = refl
+joinA_associative {Live Bot Bot} {Live Fa Tr} {Live Fa Fa} = refl
+joinA_associative {Live Bot Bot} {Live Fa Tr} {Live Fa Tr} = refl
+joinA_associative {Live Bot Bot} {Live Fa d} {Live Tr x} = refl
+joinA_associative {Live Bot Bot} {Live Tr Bot} {Live Bot x} = refl
+joinA_associative {Live Bot Bot} {Live Tr Fa} {Live Bot Bot} = refl
+joinA_associative {Live Bot Bot} {Live Tr Fa} {Live Bot Fa} = refl
+joinA_associative {Live Bot Bot} {Live Tr Fa} {Live Bot Tr} = refl
+joinA_associative {Live Bot Bot} {Live Tr Tr} {Live Bot Bot} = refl
+joinA_associative {Live Bot Bot} {Live Tr Tr} {Live Bot Fa} = refl
+joinA_associative {Live Bot Bot} {Live Tr Tr} {Live Bot Tr} = refl
+joinA_associative {Live Bot Bot} {Live Tr d} {Live Fa x} = refl
+joinA_associative {Live Bot Bot} {Live Tr Bot} {Live Tr x} = refl
+joinA_associative {Live Bot Bot} {Live Tr Fa} {Live Tr Bot} = refl
+joinA_associative {Live Bot Bot} {Live Tr Fa} {Live Tr Fa} = refl
+joinA_associative {Live Bot Bot} {Live Tr Fa} {Live Tr Tr} = refl
+joinA_associative {Live Bot Bot} {Live Tr Tr} {Live Tr Bot} = refl
+joinA_associative {Live Bot Bot} {Live Tr Tr} {Live Tr Fa} = refl
+joinA_associative {Live Bot Bot} {Live Tr Tr} {Live Tr Tr} = refl
+joinA_associative {Live Bot Bot} {Live c d} {TopErr} = refl
+joinA_associative {Live Bot Fa} {Live Bot Bot} {Live x x₁} = refl
+joinA_associative {Live Bot Fa} {Live Fa Bot} {Live Bot Bot} = refl
+joinA_associative {Live Bot Fa} {Live Fa Bot} {Live Bot Fa} = refl
+joinA_associative {Live Bot Fa} {Live Fa Bot} {Live Bot Tr} = refl
+joinA_associative {Live Bot Fa} {Live Fa Bot} {Live Fa Bot} = refl
+joinA_associative {Live Bot Fa} {Live Fa Bot} {Live Fa Fa} = refl
+joinA_associative {Live Bot Fa} {Live Fa Bot} {Live Fa Tr} = refl
+joinA_associative {Live Bot Fa} {Live Fa Bot} {Live Tr x} = refl
+joinA_associative {Live Bot Fa} {Live Tr Bot} {Live Bot Bot} = refl
+joinA_associative {Live Bot Fa} {Live Tr Bot} {Live Bot Fa} = refl
+joinA_associative {Live Bot Fa} {Live Tr Bot} {Live Bot Tr} = refl
+joinA_associative {Live Bot Fa} {Live Tr Bot} {Live Fa x} = refl
+joinA_associative {Live Bot Fa} {Live Tr Bot} {Live Tr Bot} = refl
+joinA_associative {Live Bot Fa} {Live Tr Bot} {Live Tr Fa} = refl
+joinA_associative {Live Bot Fa} {Live Tr Bot} {Live Tr Tr} = refl
+joinA_associative {Live Bot Fa} {Live c Bot} {TopErr} = refl
+joinA_associative {Live Bot Fa} {Live Bot Fa} {Live x Bot} = refl
+joinA_associative {Live Bot Fa} {Live Bot Fa} {Live x Fa} = refl
+joinA_associative {Live Bot Fa} {Live Bot Fa} {Live x Tr} = refl
+joinA_associative {Live Bot Fa} {Live Fa Fa} {Live Bot Bot} = refl
+joinA_associative {Live Bot Fa} {Live Fa Fa} {Live Bot Fa} = refl
+joinA_associative {Live Bot Fa} {Live Fa Fa} {Live Bot Tr} = refl
+joinA_associative {Live Bot Fa} {Live Fa Fa} {Live Fa Bot} = refl
+joinA_associative {Live Bot Fa} {Live Fa Fa} {Live Fa Fa} = refl
+joinA_associative {Live Bot Fa} {Live Fa Fa} {Live Fa Tr} = refl
+joinA_associative {Live Bot Fa} {Live Fa Fa} {Live Tr x} = refl
+joinA_associative {Live Bot Fa} {Live Tr Fa} {Live Bot Bot} = refl
+joinA_associative {Live Bot Fa} {Live Tr Fa} {Live Bot Fa} = refl
+joinA_associative {Live Bot Fa} {Live Tr Fa} {Live Bot Tr} = refl
+joinA_associative {Live Bot Fa} {Live Tr Fa} {Live Fa x} = refl
+joinA_associative {Live Bot Fa} {Live Tr Fa} {Live Tr Bot} = refl
+joinA_associative {Live Bot Fa} {Live Tr Fa} {Live Tr Fa} = refl
+joinA_associative {Live Bot Fa} {Live Tr Fa} {Live Tr Tr} = refl
+joinA_associative {Live Bot Fa} {Live c Fa} {TopErr} = refl
+joinA_associative {Live Bot Fa} {Live Bot Tr} {Live x Bot} = refl
+joinA_associative {Live Bot Fa} {Live Bot Tr} {Live x Fa} = refl
+joinA_associative {Live Bot Fa} {Live Bot Tr} {Live x Tr} = refl
+joinA_associative {Live Bot Fa} {Live Fa Tr} {Live Bot Bot} = refl
+joinA_associative {Live Bot Fa} {Live Fa Tr} {Live Bot Fa} = refl
+joinA_associative {Live Bot Fa} {Live Fa Tr} {Live Bot Tr} = refl
+joinA_associative {Live Bot Fa} {Live Fa Tr} {Live Fa Bot} = refl
+joinA_associative {Live Bot Fa} {Live Fa Tr} {Live Fa Fa} = refl
+joinA_associative {Live Bot Fa} {Live Fa Tr} {Live Fa Tr} = refl
+joinA_associative {Live Bot Fa} {Live Fa Tr} {Live Tr x} = refl
+joinA_associative {Live Bot Fa} {Live Tr Tr} {Live Bot Bot} = refl
+joinA_associative {Live Bot Fa} {Live Tr Tr} {Live Bot Fa} = refl
+joinA_associative {Live Bot Fa} {Live Tr Tr} {Live Bot Tr} = refl
+joinA_associative {Live Bot Fa} {Live Tr Tr} {Live Fa x} = refl
+joinA_associative {Live Bot Fa} {Live Tr Tr} {Live Tr Bot} = refl
+joinA_associative {Live Bot Fa} {Live Tr Tr} {Live Tr Fa} = refl
+joinA_associative {Live Bot Fa} {Live Tr Tr} {Live Tr Tr} = refl
+joinA_associative {Live Bot Fa} {Live c Tr} {TopErr} = refl
+joinA_associative {Live Bot Tr} {Live Bot Bot} {Live x x₁} = refl
+joinA_associative {Live Bot Tr} {Live Fa Bot} {Live Bot Bot} = refl
+joinA_associative {Live Bot Tr} {Live Fa Bot} {Live Bot Fa} = refl
+joinA_associative {Live Bot Tr} {Live Fa Bot} {Live Bot Tr} = refl
+joinA_associative {Live Bot Tr} {Live Fa Bot} {Live Fa Bot} = refl
+joinA_associative {Live Bot Tr} {Live Fa Bot} {Live Fa Fa} = refl
+joinA_associative {Live Bot Tr} {Live Fa Bot} {Live Fa Tr} = refl
+joinA_associative {Live Bot Tr} {Live Fa Bot} {Live Tr x} = refl
+joinA_associative {Live Bot Tr} {Live Tr Bot} {Live Bot Bot} = refl
+joinA_associative {Live Bot Tr} {Live Tr Bot} {Live Bot Fa} = refl
+joinA_associative {Live Bot Tr} {Live Tr Bot} {Live Bot Tr} = refl
+joinA_associative {Live Bot Tr} {Live Tr Bot} {Live Fa x} = refl
+joinA_associative {Live Bot Tr} {Live Tr Bot} {Live Tr Bot} = refl
+joinA_associative {Live Bot Tr} {Live Tr Bot} {Live Tr Fa} = refl
+joinA_associative {Live Bot Tr} {Live Tr Bot} {Live Tr Tr} = refl
+joinA_associative {Live Bot Tr} {Live c Bot} {TopErr} = refl
+joinA_associative {Live Bot Tr} {Live Bot Fa} {Live x Bot} = refl
+joinA_associative {Live Bot Tr} {Live Bot Fa} {Live x Fa} = refl
+joinA_associative {Live Bot Tr} {Live Bot Fa} {Live x Tr} = refl
+joinA_associative {Live Bot Tr} {Live Fa Fa} {Live Bot Bot} = refl
+joinA_associative {Live Bot Tr} {Live Fa Fa} {Live Bot Fa} = refl
+joinA_associative {Live Bot Tr} {Live Fa Fa} {Live Bot Tr} = refl
+joinA_associative {Live Bot Tr} {Live Fa Fa} {Live Fa Bot} = refl
+joinA_associative {Live Bot Tr} {Live Fa Fa} {Live Fa Fa} = refl
+joinA_associative {Live Bot Tr} {Live Fa Fa} {Live Fa Tr} = refl
+joinA_associative {Live Bot Tr} {Live Fa Fa} {Live Tr x} = refl
+joinA_associative {Live Bot Tr} {Live Tr Fa} {Live Bot Bot} = refl
+joinA_associative {Live Bot Tr} {Live Tr Fa} {Live Bot Fa} = refl
+joinA_associative {Live Bot Tr} {Live Tr Fa} {Live Bot Tr} = refl
+joinA_associative {Live Bot Tr} {Live Tr Fa} {Live Fa x} = refl
+joinA_associative {Live Bot Tr} {Live Tr Fa} {Live Tr Bot} = refl
+joinA_associative {Live Bot Tr} {Live Tr Fa} {Live Tr Fa} = refl
+joinA_associative {Live Bot Tr} {Live Tr Fa} {Live Tr Tr} = refl
+joinA_associative {Live Bot Tr} {Live c Fa} {TopErr} = refl
+joinA_associative {Live Bot Tr} {Live Bot Tr} {Live x Bot} = refl
+joinA_associative {Live Bot Tr} {Live Bot Tr} {Live x Fa} = refl
+joinA_associative {Live Bot Tr} {Live Bot Tr} {Live x Tr} = refl
+joinA_associative {Live Bot Tr} {Live Fa Tr} {Live Bot Bot} = refl
+joinA_associative {Live Bot Tr} {Live Fa Tr} {Live Bot Fa} = refl
+joinA_associative {Live Bot Tr} {Live Fa Tr} {Live Bot Tr} = refl
+joinA_associative {Live Bot Tr} {Live Fa Tr} {Live Fa Bot} = refl
+joinA_associative {Live Bot Tr} {Live Fa Tr} {Live Fa Fa} = refl
+joinA_associative {Live Bot Tr} {Live Fa Tr} {Live Fa Tr} = refl
+joinA_associative {Live Bot Tr} {Live Fa Tr} {Live Tr x} = refl
+joinA_associative {Live Bot Tr} {Live Tr Tr} {Live Bot Bot} = refl
+joinA_associative {Live Bot Tr} {Live Tr Tr} {Live Bot Fa} = refl
+joinA_associative {Live Bot Tr} {Live Tr Tr} {Live Bot Tr} = refl
+joinA_associative {Live Bot Tr} {Live Tr Tr} {Live Fa x} = refl
+joinA_associative {Live Bot Tr} {Live Tr Tr} {Live Tr Bot} = refl
+joinA_associative {Live Bot Tr} {Live Tr Tr} {Live Tr Fa} = refl
+joinA_associative {Live Bot Tr} {Live Tr Tr} {Live Tr Tr} = refl
+joinA_associative {Live Bot Tr} {Live c Tr} {TopErr} = refl
+joinA_associative {Live Fa Bot} {Live Bot Bot} {Live x x₁} = refl
+joinA_associative {Live Fa Bot} {Live Bot Fa} {Live Bot Bot} = refl
+joinA_associative {Live Fa Bot} {Live Bot Fa} {Live Bot Fa} = refl
+joinA_associative {Live Fa Bot} {Live Bot Fa} {Live Bot Tr} = refl
+joinA_associative {Live Fa Bot} {Live Bot Fa} {Live Fa Bot} = refl
+joinA_associative {Live Fa Bot} {Live Bot Fa} {Live Fa Fa} = refl
+joinA_associative {Live Fa Bot} {Live Bot Fa} {Live Fa Tr} = refl
+joinA_associative {Live Fa Bot} {Live Bot Fa} {Live Tr Bot} = refl
+joinA_associative {Live Fa Bot} {Live Bot Fa} {Live Tr Fa} = refl
+joinA_associative {Live Fa Bot} {Live Bot Fa} {Live Tr Tr} = refl
+joinA_associative {Live Fa Bot} {Live Bot Tr} {Live Bot Bot} = refl
+joinA_associative {Live Fa Bot} {Live Bot Tr} {Live Bot Fa} = refl
+joinA_associative {Live Fa Bot} {Live Bot Tr} {Live Bot Tr} = refl
+joinA_associative {Live Fa Bot} {Live Bot Tr} {Live Fa Bot} = refl
+joinA_associative {Live Fa Bot} {Live Bot Tr} {Live Fa Fa} = refl
+joinA_associative {Live Fa Bot} {Live Bot Tr} {Live Fa Tr} = refl
+joinA_associative {Live Fa Bot} {Live Bot Tr} {Live Tr Bot} = refl
+joinA_associative {Live Fa Bot} {Live Bot Tr} {Live Tr Fa} = refl
+joinA_associative {Live Fa Bot} {Live Bot Tr} {Live Tr Tr} = refl
+joinA_associative {Live Fa Bot} {Live Bot d} {TopErr} = refl
+joinA_associative {Live Fa Fa} {Live Bot Bot} {Live x x₁} = refl
+joinA_associative {Live Fa Fa} {Live Bot Bot} {TopErr} = refl
+joinA_associative {Live Fa Fa} {Live Bot Fa} {Live Bot Bot} = refl
+joinA_associative {Live Fa Fa} {Live Bot Fa} {Live Bot Fa} = refl
+joinA_associative {Live Fa Fa} {Live Bot Fa} {Live Bot Tr} = refl
+joinA_associative {Live Fa Fa} {Live Bot Fa} {Live Fa Bot} = refl
+joinA_associative {Live Fa Fa} {Live Bot Fa} {Live Fa Fa} = refl
+joinA_associative {Live Fa Fa} {Live Bot Fa} {Live Fa Tr} = refl
+joinA_associative {Live Fa Fa} {Live Bot Fa} {Live Tr Bot} = refl
+joinA_associative {Live Fa Fa} {Live Bot Fa} {Live Tr Fa} = refl
+joinA_associative {Live Fa Fa} {Live Bot Fa} {Live Tr Tr} = refl
+joinA_associative {Live Fa Fa} {Live Bot Fa} {TopErr} = refl
+joinA_associative {Live Fa Fa} {Live Bot Tr} {Live Bot Bot} = refl
+joinA_associative {Live Fa Fa} {Live Bot Tr} {Live Fa Bot} = refl
+joinA_associative {Live Fa Fa} {Live Bot Tr} {Live Tr Bot} = refl
+joinA_associative {Live Fa Fa} {Live Bot Tr} {Live x Fa} = refl
+joinA_associative {Live Fa Fa} {Live Bot Tr} {Live Bot Tr} = refl
+joinA_associative {Live Fa Fa} {Live Bot Tr} {Live Fa Tr} = refl
+joinA_associative {Live Fa Fa} {Live Bot Tr} {Live Tr Tr} = refl
+joinA_associative {Live Fa Fa} {Live Bot Tr} {TopErr} = refl
+joinA_associative {Live Fa Tr} {Live Bot Bot} {Live x x₁} = refl
+joinA_associative {Live Fa Tr} {Live Bot Bot} {TopErr} = refl
+joinA_associative {Live Fa Tr} {Live Bot Fa} {Live Bot Bot} = refl
+joinA_associative {Live Fa Tr} {Live Bot Fa} {Live Fa Bot} = refl
+joinA_associative {Live Fa Tr} {Live Bot Fa} {Live Tr Bot} = refl
+joinA_associative {Live Fa Tr} {Live Bot Fa} {Live Bot Fa} = refl
+joinA_associative {Live Fa Tr} {Live Bot Fa} {Live Fa Fa} = refl
+joinA_associative {Live Fa Tr} {Live Bot Fa} {Live Tr Fa} = refl
+joinA_associative {Live Fa Tr} {Live Bot Fa} {Live x Tr} = refl
+joinA_associative {Live Fa Tr} {Live Bot Fa} {TopErr} = refl
+joinA_associative {Live Fa Tr} {Live Bot Tr} {Live Bot Bot} = refl
+joinA_associative {Live Fa Tr} {Live Bot Tr} {Live Bot Fa} = refl
+joinA_associative {Live Fa Tr} {Live Bot Tr} {Live Bot Tr} = refl
+joinA_associative {Live Fa Tr} {Live Bot Tr} {Live Fa Bot} = refl
+joinA_associative {Live Fa Tr} {Live Bot Tr} {Live Fa Fa} = refl
+joinA_associative {Live Fa Tr} {Live Bot Tr} {Live Fa Tr} = refl
+joinA_associative {Live Fa Tr} {Live Bot Tr} {Live Tr Bot} = refl
+joinA_associative {Live Fa Tr} {Live Bot Tr} {Live Tr Fa} = refl
+joinA_associative {Live Fa Tr} {Live Bot Tr} {Live Tr Tr} = refl
+joinA_associative {Live Fa Tr} {Live Bot Tr} {TopErr} = refl
+joinA_associative {Live Fa Bot} {Live Fa Bot} {Live Bot x} = refl
+joinA_associative {Live Fa Bot} {Live Fa Fa} {Live Bot Bot} = refl
+joinA_associative {Live Fa Bot} {Live Fa Fa} {Live Bot Fa} = refl
+joinA_associative {Live Fa Bot} {Live Fa Fa} {Live Bot Tr} = refl
+joinA_associative {Live Fa Bot} {Live Fa Tr} {Live Bot Bot} = refl
+joinA_associative {Live Fa Bot} {Live Fa Tr} {Live Bot Fa} = refl
+joinA_associative {Live Fa Bot} {Live Fa Tr} {Live Bot Tr} = refl
+joinA_associative {Live Fa Bot} {Live Fa Bot} {Live Fa x} = refl
+joinA_associative {Live Fa Bot} {Live Fa Fa} {Live Fa Bot} = refl
+joinA_associative {Live Fa Bot} {Live Fa Fa} {Live Fa Fa} = refl
+joinA_associative {Live Fa Bot} {Live Fa Fa} {Live Fa Tr} = refl
+joinA_associative {Live Fa Bot} {Live Fa Tr} {Live Fa Bot} = refl
+joinA_associative {Live Fa Bot} {Live Fa Tr} {Live Fa Fa} = refl
+joinA_associative {Live Fa Bot} {Live Fa Tr} {Live Fa Tr} = refl
+joinA_associative {Live Fa Bot} {Live Fa d} {Live Tr x} = refl
+joinA_associative {Live Fa Bot} {Live Fa d} {TopErr} = refl
+joinA_associative {Live Fa Fa} {Live Fa Bot} {Live Bot Bot} = refl
+joinA_associative {Live Fa Fa} {Live Fa Bot} {Live Bot Fa} = refl
+joinA_associative {Live Fa Fa} {Live Fa Bot} {Live Bot Tr} = refl
+joinA_associative {Live Fa Fa} {Live Fa Bot} {Live Fa x} = refl
+joinA_associative {Live Fa Fa} {Live Fa Bot} {Live Tr x} = refl
+joinA_associative {Live Fa Fa} {Live Fa Bot} {TopErr} = refl
+joinA_associative {Live Fa Fa} {Live Fa Fa} {Live Bot Bot} = refl
+joinA_associative {Live Fa Fa} {Live Fa Fa} {Live Bot Fa} = refl
+joinA_associative {Live Fa Fa} {Live Fa Fa} {Live Bot Tr} = refl
+joinA_associative {Live Fa Fa} {Live Fa Fa} {Live Fa Bot} = refl
+joinA_associative {Live Fa Fa} {Live Fa Fa} {Live Fa Fa} = refl
+joinA_associative {Live Fa Fa} {Live Fa Fa} {Live Fa Tr} = refl
+joinA_associative {Live Fa Fa} {Live Fa Fa} {Live Tr x} = refl
+joinA_associative {Live Fa Fa} {Live Fa Fa} {TopErr} = refl
+joinA_associative {Live Fa Fa} {Live Fa Tr} {Live Bot Bot} = refl
+joinA_associative {Live Fa Fa} {Live Fa Tr} {Live Bot Fa} = refl
+joinA_associative {Live Fa Fa} {Live Fa Tr} {Live Bot Tr} = refl
+joinA_associative {Live Fa Fa} {Live Fa Tr} {Live Fa Bot} = refl
+joinA_associative {Live Fa Fa} {Live Fa Tr} {Live Fa Fa} = refl
+joinA_associative {Live Fa Fa} {Live Fa Tr} {Live Fa Tr} = refl
+joinA_associative {Live Fa Fa} {Live Fa Tr} {Live Tr x} = refl
+joinA_associative {Live Fa Fa} {Live Fa Tr} {TopErr} = refl
+joinA_associative {Live Fa Tr} {Live Fa Bot} {Live Bot Bot} = refl
+joinA_associative {Live Fa Tr} {Live Fa Bot} {Live Bot Fa} = refl
+joinA_associative {Live Fa Tr} {Live Fa Bot} {Live Bot Tr} = refl
+joinA_associative {Live Fa Tr} {Live Fa Bot} {Live Fa x} = refl
+joinA_associative {Live Fa Tr} {Live Fa Bot} {Live Tr x} = refl
+joinA_associative {Live Fa Tr} {Live Fa Bot} {TopErr} = refl
+joinA_associative {Live Fa Tr} {Live Fa Fa} {Live Bot Bot} = refl
+joinA_associative {Live Fa Tr} {Live Fa Fa} {Live Bot Fa} = refl
+joinA_associative {Live Fa Tr} {Live Fa Fa} {Live Bot Tr} = refl
+joinA_associative {Live Fa Tr} {Live Fa Fa} {Live Fa Bot} = refl
+joinA_associative {Live Fa Tr} {Live Fa Fa} {Live Fa Fa} = refl
+joinA_associative {Live Fa Tr} {Live Fa Fa} {Live Fa Tr} = refl
+joinA_associative {Live Fa Tr} {Live Fa Fa} {Live Tr x} = refl
+joinA_associative {Live Fa Tr} {Live Fa Fa} {TopErr} = refl
+joinA_associative {Live Fa Tr} {Live Fa Tr} {Live Bot Bot} = refl
+joinA_associative {Live Fa Tr} {Live Fa Tr} {Live Bot Fa} = refl
+joinA_associative {Live Fa Tr} {Live Fa Tr} {Live Bot Tr} = refl
+joinA_associative {Live Fa Tr} {Live Fa Tr} {Live Fa Bot} = refl
+joinA_associative {Live Fa Tr} {Live Fa Tr} {Live Fa Fa} = refl
+joinA_associative {Live Fa Tr} {Live Fa Tr} {Live Fa Tr} = refl
+joinA_associative {Live Fa Tr} {Live Fa Tr} {Live Tr x} = refl
+joinA_associative {Live Fa Tr} {Live Fa Tr} {TopErr} = refl
+joinA_associative {Live Fa b} {Live Tr Bot} {Live Bot x} = refl
+joinA_associative {Live Fa b} {Live Tr Fa} {Live Bot Bot} = refl
+joinA_associative {Live Fa b} {Live Tr Fa} {Live Bot Fa} = refl
+joinA_associative {Live Fa b} {Live Tr Fa} {Live Bot Tr} = refl
+joinA_associative {Live Fa b} {Live Tr Tr} {Live Bot Bot} = refl
+joinA_associative {Live Fa b} {Live Tr Tr} {Live Bot Fa} = refl
+joinA_associative {Live Fa b} {Live Tr Tr} {Live Bot Tr} = refl
+joinA_associative {Live Fa b} {Live Tr d} {Live Fa x} = refl
+joinA_associative {Live Fa b} {Live Tr Bot} {Live Tr x} = refl
+joinA_associative {Live Fa b} {Live Tr Fa} {Live Tr Bot} = refl
+joinA_associative {Live Fa b} {Live Tr Fa} {Live Tr Fa} = refl
+joinA_associative {Live Fa b} {Live Tr Fa} {Live Tr Tr} = refl
+joinA_associative {Live Fa b} {Live Tr Tr} {Live Tr Bot} = refl
+joinA_associative {Live Fa b} {Live Tr Tr} {Live Tr Fa} = refl
+joinA_associative {Live Fa b} {Live Tr Tr} {Live Tr Tr} = refl
+joinA_associative {Live Fa b} {Live Tr d} {TopErr} = refl
+joinA_associative {Live Tr Bot} {Live Bot Bot} {Live x x₁} = refl
+joinA_associative {Live Tr Bot} {Live Bot Fa} {Live Bot Bot} = refl
+joinA_associative {Live Tr Bot} {Live Bot Fa} {Live Bot Fa} = refl
+joinA_associative {Live Tr Bot} {Live Bot Fa} {Live Bot Tr} = refl
+joinA_associative {Live Tr Bot} {Live Bot Fa} {Live Fa Bot} = refl
+joinA_associative {Live Tr Bot} {Live Bot Fa} {Live Fa Fa} = refl
+joinA_associative {Live Tr Bot} {Live Bot Fa} {Live Fa Tr} = refl
+joinA_associative {Live Tr Bot} {Live Bot Fa} {Live Tr Bot} = refl
+joinA_associative {Live Tr Bot} {Live Bot Fa} {Live Tr Fa} = refl
+joinA_associative {Live Tr Bot} {Live Bot Fa} {Live Tr Tr} = refl
+joinA_associative {Live Tr Bot} {Live Bot Tr} {Live Bot Bot} = refl
+joinA_associative {Live Tr Bot} {Live Bot Tr} {Live Bot Fa} = refl
+joinA_associative {Live Tr Bot} {Live Bot Tr} {Live Bot Tr} = refl
+joinA_associative {Live Tr Bot} {Live Bot Tr} {Live Fa Bot} = refl
+joinA_associative {Live Tr Bot} {Live Bot Tr} {Live Fa Fa} = refl
+joinA_associative {Live Tr Bot} {Live Bot Tr} {Live Fa Tr} = refl
+joinA_associative {Live Tr Bot} {Live Bot Tr} {Live Tr Bot} = refl
+joinA_associative {Live Tr Bot} {Live Bot Tr} {Live Tr Fa} = refl
+joinA_associative {Live Tr Bot} {Live Bot Tr} {Live Tr Tr} = refl
+joinA_associative {Live Tr Bot} {Live Bot d} {TopErr} = refl
+joinA_associative {Live Tr Fa} {Live Bot Bot} {Live x x₁} = refl
+joinA_associative {Live Tr Fa} {Live Bot Bot} {TopErr} = refl
+joinA_associative {Live Tr Fa} {Live Bot Fa} {Live Bot Bot} = refl
+joinA_associative {Live Tr Fa} {Live Bot Fa} {Live Bot Fa} = refl
+joinA_associative {Live Tr Fa} {Live Bot Fa} {Live Bot Tr} = refl
+joinA_associative {Live Tr Fa} {Live Bot Fa} {Live Fa Bot} = refl
+joinA_associative {Live Tr Fa} {Live Bot Fa} {Live Fa Fa} = refl
+joinA_associative {Live Tr Fa} {Live Bot Fa} {Live Fa Tr} = refl
+joinA_associative {Live Tr Fa} {Live Bot Fa} {Live Tr Bot} = refl
+joinA_associative {Live Tr Fa} {Live Bot Fa} {Live Tr Fa} = refl
+joinA_associative {Live Tr Fa} {Live Bot Fa} {Live Tr Tr} = refl
+joinA_associative {Live Tr Fa} {Live Bot Fa} {TopErr} = refl
+joinA_associative {Live Tr Fa} {Live Bot Tr} {Live Bot Bot} = refl
+joinA_associative {Live Tr Fa} {Live Bot Tr} {Live Fa Bot} = refl
+joinA_associative {Live Tr Fa} {Live Bot Tr} {Live Tr Bot} = refl
+joinA_associative {Live Tr Fa} {Live Bot Tr} {Live x Fa} = refl
+joinA_associative {Live Tr Fa} {Live Bot Tr} {Live Bot Tr} = refl
+joinA_associative {Live Tr Fa} {Live Bot Tr} {Live Fa Tr} = refl
+joinA_associative {Live Tr Fa} {Live Bot Tr} {Live Tr Tr} = refl
+joinA_associative {Live Tr Fa} {Live Bot Tr} {TopErr} = refl
+joinA_associative {Live Tr Tr} {Live Bot Bot} {Live x x₁} = refl
+joinA_associative {Live Tr Tr} {Live Bot Bot} {TopErr} = refl
+joinA_associative {Live Tr Tr} {Live Bot Fa} {Live Bot Bot} = refl
+joinA_associative {Live Tr Tr} {Live Bot Fa} {Live Fa Bot} = refl
+joinA_associative {Live Tr Tr} {Live Bot Fa} {Live Tr Bot} = refl
+joinA_associative {Live Tr Tr} {Live Bot Fa} {Live Bot Fa} = refl
+joinA_associative {Live Tr Tr} {Live Bot Fa} {Live Fa Fa} = refl
+joinA_associative {Live Tr Tr} {Live Bot Fa} {Live Tr Fa} = refl
+joinA_associative {Live Tr Tr} {Live Bot Fa} {Live x Tr} = refl
+joinA_associative {Live Tr Tr} {Live Bot Fa} {TopErr} = refl
+joinA_associative {Live Tr Tr} {Live Bot Tr} {Live Bot Bot} = refl
+joinA_associative {Live Tr Tr} {Live Bot Tr} {Live Bot Fa} = refl
+joinA_associative {Live Tr Tr} {Live Bot Tr} {Live Bot Tr} = refl
+joinA_associative {Live Tr Tr} {Live Bot Tr} {Live Fa Bot} = refl
+joinA_associative {Live Tr Tr} {Live Bot Tr} {Live Fa Fa} = refl
+joinA_associative {Live Tr Tr} {Live Bot Tr} {Live Fa Tr} = refl
+joinA_associative {Live Tr Tr} {Live Bot Tr} {Live Tr Bot} = refl
+joinA_associative {Live Tr Tr} {Live Bot Tr} {Live Tr Fa} = refl
+joinA_associative {Live Tr Tr} {Live Bot Tr} {Live Tr Tr} = refl
+joinA_associative {Live Tr Tr} {Live Bot Tr} {TopErr} = refl
+joinA_associative {Live Tr b} {Live Fa Bot} {Live Bot x} = refl
+joinA_associative {Live Tr b} {Live Fa Fa} {Live Bot Bot} = refl
+joinA_associative {Live Tr b} {Live Fa Fa} {Live Bot Fa} = refl
+joinA_associative {Live Tr b} {Live Fa Fa} {Live Bot Tr} = refl
+joinA_associative {Live Tr b} {Live Fa Tr} {Live Bot Bot} = refl
+joinA_associative {Live Tr b} {Live Fa Tr} {Live Bot Fa} = refl
+joinA_associative {Live Tr b} {Live Fa Tr} {Live Bot Tr} = refl
+joinA_associative {Live Tr b} {Live Fa Bot} {Live Fa x} = refl
+joinA_associative {Live Tr b} {Live Fa Fa} {Live Fa Bot} = refl
+joinA_associative {Live Tr b} {Live Fa Fa} {Live Fa Fa} = refl
+joinA_associative {Live Tr b} {Live Fa Fa} {Live Fa Tr} = refl
+joinA_associative {Live Tr b} {Live Fa Tr} {Live Fa Bot} = refl
+joinA_associative {Live Tr b} {Live Fa Tr} {Live Fa Fa} = refl
+joinA_associative {Live Tr b} {Live Fa Tr} {Live Fa Tr} = refl
+joinA_associative {Live Tr b} {Live Fa d} {Live Tr x} = refl
+joinA_associative {Live Tr b} {Live Fa d} {TopErr} = refl
+joinA_associative {Live Tr Bot} {Live Tr Bot} {Live Bot x} = refl
+joinA_associative {Live Tr Bot} {Live Tr Fa} {Live Bot Bot} = refl
+joinA_associative {Live Tr Bot} {Live Tr Fa} {Live Bot Fa} = refl
+joinA_associative {Live Tr Bot} {Live Tr Fa} {Live Bot Tr} = refl
+joinA_associative {Live Tr Bot} {Live Tr Tr} {Live Bot Bot} = refl
+joinA_associative {Live Tr Bot} {Live Tr Tr} {Live Bot Fa} = refl
+joinA_associative {Live Tr Bot} {Live Tr Tr} {Live Bot Tr} = refl
+joinA_associative {Live Tr Bot} {Live Tr d} {Live Fa x} = refl
+joinA_associative {Live Tr Bot} {Live Tr Bot} {Live Tr x} = refl
+joinA_associative {Live Tr Bot} {Live Tr Fa} {Live Tr Bot} = refl
+joinA_associative {Live Tr Bot} {Live Tr Fa} {Live Tr Fa} = refl
+joinA_associative {Live Tr Bot} {Live Tr Fa} {Live Tr Tr} = refl
+joinA_associative {Live Tr Bot} {Live Tr Tr} {Live Tr Bot} = refl
+joinA_associative {Live Tr Bot} {Live Tr Tr} {Live Tr Fa} = refl
+joinA_associative {Live Tr Bot} {Live Tr Tr} {Live Tr Tr} = refl
+joinA_associative {Live Tr Bot} {Live Tr d} {TopErr} = refl
+joinA_associative {Live Tr Fa} {Live Tr Bot} {Live Bot Bot} = refl
+joinA_associative {Live Tr Fa} {Live Tr Bot} {Live Bot Fa} = refl
+joinA_associative {Live Tr Fa} {Live Tr Bot} {Live Bot Tr} = refl
+joinA_associative {Live Tr Fa} {Live Tr Bot} {Live Fa x} = refl
+joinA_associative {Live Tr Fa} {Live Tr Bot} {Live Tr x} = refl
+joinA_associative {Live Tr Fa} {Live Tr Bot} {TopErr} = refl
+joinA_associative {Live Tr Fa} {Live Tr Fa} {Live Bot Bot} = refl
+joinA_associative {Live Tr Fa} {Live Tr Fa} {Live Bot Fa} = refl
+joinA_associative {Live Tr Fa} {Live Tr Fa} {Live Bot Tr} = refl
+joinA_associative {Live Tr Fa} {Live Tr Fa} {Live Fa x} = refl
+joinA_associative {Live Tr Fa} {Live Tr Fa} {Live Tr Bot} = refl
+joinA_associative {Live Tr Fa} {Live Tr Fa} {Live Tr Fa} = refl
+joinA_associative {Live Tr Fa} {Live Tr Fa} {Live Tr Tr} = refl
+joinA_associative {Live Tr Fa} {Live Tr Fa} {TopErr} = refl
+joinA_associative {Live Tr Fa} {Live Tr Tr} {Live Bot Bot} = refl
+joinA_associative {Live Tr Fa} {Live Tr Tr} {Live Bot Fa} = refl
+joinA_associative {Live Tr Fa} {Live Tr Tr} {Live Bot Tr} = refl
+joinA_associative {Live Tr Fa} {Live Tr Tr} {Live Fa x} = refl
+joinA_associative {Live Tr Fa} {Live Tr Tr} {Live Tr Bot} = refl
+joinA_associative {Live Tr Fa} {Live Tr Tr} {Live Tr Fa} = refl
+joinA_associative {Live Tr Fa} {Live Tr Tr} {Live Tr Tr} = refl
+joinA_associative {Live Tr Fa} {Live Tr Tr} {TopErr} = refl
+joinA_associative {Live Tr Tr} {Live Tr Bot} {Live Bot Bot} = refl
+joinA_associative {Live Tr Tr} {Live Tr Bot} {Live Bot Fa} = refl
+joinA_associative {Live Tr Tr} {Live Tr Bot} {Live Bot Tr} = refl
+joinA_associative {Live Tr Tr} {Live Tr Bot} {Live Fa x} = refl
+joinA_associative {Live Tr Tr} {Live Tr Bot} {Live Tr x} = refl
+joinA_associative {Live Tr Tr} {Live Tr Bot} {TopErr} = refl
+joinA_associative {Live Tr Tr} {Live Tr Fa} {Live Bot Bot} = refl
+joinA_associative {Live Tr Tr} {Live Tr Fa} {Live Bot Fa} = refl
+joinA_associative {Live Tr Tr} {Live Tr Fa} {Live Bot Tr} = refl
+joinA_associative {Live Tr Tr} {Live Tr Fa} {Live Fa x} = refl
+joinA_associative {Live Tr Tr} {Live Tr Fa} {Live Tr Bot} = refl
+joinA_associative {Live Tr Tr} {Live Tr Fa} {Live Tr Fa} = refl
+joinA_associative {Live Tr Tr} {Live Tr Fa} {Live Tr Tr} = refl
+joinA_associative {Live Tr Tr} {Live Tr Fa} {TopErr} = refl
+joinA_associative {Live Tr Tr} {Live Tr Tr} {Live Bot Bot} = refl
+joinA_associative {Live Tr Tr} {Live Tr Tr} {Live Bot Fa} = refl
+joinA_associative {Live Tr Tr} {Live Tr Tr} {Live Bot Tr} = refl
+joinA_associative {Live Tr Tr} {Live Tr Tr} {Live Fa x} = refl
+joinA_associative {Live Tr Tr} {Live Tr Tr} {Live Tr Bot} = refl
+joinA_associative {Live Tr Tr} {Live Tr Tr} {Live Tr Fa} = refl
+joinA_associative {Live Tr Tr} {Live Tr Tr} {Live Tr Tr} = refl
+joinA_associative {Live Tr Tr} {Live Tr Tr} {TopErr} = refl
+
+--------------------------------------------------------------------------------
+-}
