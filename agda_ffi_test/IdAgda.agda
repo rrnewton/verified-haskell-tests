@@ -28,3 +28,22 @@ showInt x = primShowInteger x
 
 {-# COMPILED_EXPORT showInt showInt #-}
 
+data AndState : Set where
+  Bot      : AndState
+  TrueBot  : AndState
+  BotTrue  : AndState
+  TrueTrue : AndState
+  F        : AndState
+
+{-# HASKELL
+data AndState = Bot  | TrueBot | BotTrue | TrueTrue | F
+#-}
+
+{-# COMPILED_DATA AndState AndState Bot TrueBot BotTrue TrueTrue F #-}
+
+asyncAnd : AndState → AndState → AndState
+asyncAnd Bot y = y
+asyncAnd x y   = x
+
+{-# COMPILED_EXPORT asyncAnd asyncAnd #-}
+

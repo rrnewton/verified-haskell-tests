@@ -1,0 +1,4 @@
+# This is just a back-stop to keep stack from looking for a global config.
+packages: []
+extra-deps: []
+resolver: lts-6.1

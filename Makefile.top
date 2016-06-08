@@ -12,19 +12,23 @@
 
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-AGDA=$(ROOT_DIR)/bin/agda
+AGDA24=$(ROOT_DIR)/bin/agda24/agda
 # Here's an alternate command to run Agda 2.4.2.3:
 # AGDA= docker run -i --rm -v $(HOME):$(HOME) banacorn/agda:2.4.2.3 agda
 
 AGDA25=$(ROOT_DIR)/bin/agda25/agda
 
+# GHC=ghc
+GHC= stack --resolver=lts-6.1 ghc --
+
 #-------------------------------------------------------------------
 
-tools: $(AGDA) $(AGDA25)
+tools: $(AGDA24) $(AGDA25)
 
 # Install agda 2.4.2.3
-build-agda24: $(AGDA)
-$(AGDA):
+build-agda24: $(AGDA24)
+$(AGDA24):
+	mkdir -p ./bin/agda24/
 	stack install --local-bin-path=./bin --resolver=lts-3.0 Agda
 
 build-agda25: $(AGDA25)
@@ -32,11 +36,12 @@ $(AGDA25):
 	mkdir -p ./bin/agda25/
 	stack install --local-bin-path=./bin/agda25/ --resolver=lts-6.1 Agda
 
-# NIX_PATH=
+# NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/16.03.tar.gz
+NIX_PATH=nixpkgs=https://nixos.org/releases/nixpkgs/nixpkgs-16.09pre83147.df89584/nixexprs.tar.xz
 
 # With 16.09pre:
 build-coq:
-	nix-env -i coq-8.5pl1
+	NIX_PATH=$(NIX_PATH) nix-env -i coq-8.5pl1
 
 build-isabelle:
-	nix-env -i isabelle-2016
+	NIX_PATH=$(NIX_PATH) nix-env -i isabelle-2016
