@@ -1,2 +1,4 @@
-*.agdai
-MAlonzo
+.dir-locals.el
+*.ibc
+*.vo
+./not_tracked
