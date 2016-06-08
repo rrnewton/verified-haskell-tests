@@ -1,5 +1,7 @@
 
 
+include ../Makefile
+
 default: UseIdAgda 
 all: UseIdAgda Hello2
 
