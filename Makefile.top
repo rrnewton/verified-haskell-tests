@@ -28,12 +28,12 @@ tools: $(AGDA24) $(AGDA25)
 # Install agda 2.4.2.3
 build-agda24: $(AGDA24)
 $(AGDA24):
-	mkdir -p ./bin/agda24/
-	stack install --local-bin-path=./bin --resolver=lts-3.0 Agda
+	mkdir -p $(shell dirname $(AGDA24))
+	stack install --local-bin-path=./bin/agda24 --resolver=lts-3.0 Agda
 
 build-agda25: $(AGDA25)
 $(AGDA25):
-	mkdir -p ./bin/agda25/
+	mkdir -p $(shell dirname $(AGDA25))
 	stack install --local-bin-path=./bin/agda25/ --resolver=lts-6.1 Agda
 
 # NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/16.03.tar.gz
@@ -45,3 +45,4 @@ build-coq:
 
 build-isabelle:
 	NIX_PATH=$(NIX_PATH) nix-env -i isabelle-2016
+

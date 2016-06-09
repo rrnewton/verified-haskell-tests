@@ -37,13 +37,36 @@ data AndState : Set where
 
 {-# HASKELL
 data AndState = Bot  | TrueBot | BotTrue | TrueTrue | F
+  deriving Show 
 #-}
 
 {-# COMPILED_DATA AndState AndState Bot TrueBot BotTrue TrueTrue F #-}
 
-asyncAnd : AndState → AndState → AndState
-asyncAnd Bot y = y
-asyncAnd x y   = x
+joinStates : AndState -> AndState -> AndState
+-- Manually writing out reflexive cases too:
+joinStates TrueBot  TrueBot  = TrueBot
+joinStates BotTrue  BotTrue  = BotTrue 
+joinStates TrueTrue TrueTrue = TrueTrue
+---------------------------
+joinStates TrueBot BotTrue = TrueTrue
+joinStates TrueTrue TrueBot = TrueTrue
+joinStates TrueTrue BotTrue = TrueTrue
+joinStates Bot x = x
+joinStates F  _  = F
+---------------------------
+-- joinStates x y = joinStates y x -- Yay, this works!
+ -- [2016.06.08] Nope, in 2.4.2.3 termination checking fails here.
 
-{-# COMPILED_EXPORT asyncAnd asyncAnd #-}
+-- Here we manually spell it out:
+joinStates BotTrue TrueBot   = TrueTrue
+joinStates TrueBot TrueTrue  = TrueTrue
+joinStates BotTrue TrueTrue  = TrueTrue
+joinStates x Bot = x
+joinStates _  F  = F
 
+{-# COMPILED_EXPORT joinStates joinStates #-}
+
+x : AndState
+x = joinStates BotTrue TrueTrue
+
+{-# COMPILED_EXPORT x example #-}

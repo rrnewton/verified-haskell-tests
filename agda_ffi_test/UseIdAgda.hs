@@ -1,11 +1,14 @@
 -- module UseIdAgda where
 module Main where
 
-import MAlonzo.Code.IdAgda (idAgda)
+import MAlonzo.Code.IdAgda 
 
 -- idAgda :: () → a → a
 
 idAgdaApplied :: a -> a
 idAgdaApplied = idAgda ()
 
-main = print (idAgdaApplied 3)
+main =
+  do print (idAgdaApplied 3)
+     print (joinStates BotTrue TrueTrue)
+     print example
